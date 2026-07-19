@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "descripcion": "ORÁCULO guardian rule pack — the universal LLM code errors, as verifiable rules. Grows with the pack: every new universal error discovered by one user becomes a rule for everyone (via PR + human review).",
+  "reglas": [
+    {
+      "id": "import_no_stdlib",
+      "tipo": "ast",
+      "severidad": "error",
+      "mensaje": "Non-stdlib or hallucinated import: compiled .py are stdlib-only unless a dependency is explicitly approved."
+    },
+    {
+      "id": "except_desnudo",
+      "tipo": "ast",
+      "severidad": "error",
+      "mensaje": "Bare `except:` swallows every failure, including the one that should degrade this script."
+    },
+    {
+      "id": "eval_exec",
+      "tipo": "ast",
+      "severidad": "error",
+      "mensaje": "`eval`/`exec` in generated code is forbidden: unauditable and a classic LLM shortcut."
+    },
+    {
+      "id": "os_system",
+      "tipo": "ast",
+      "severidad": "error",
+      "mensaje": "`os.system` is forbidden: use subprocess.run with an argv list."
+    },
+    {
+      "id": "shell_true",
+      "tipo": "ast",
+      "severidad": "error",
+      "mensaje": "`shell=True` is an injection surface: pass an argv list instead."
+    },
+    {
+      "id": "default_mutable",
+      "tipo": "ast",
+      "severidad": "error",
+      "mensaje": "Mutable default argument: state leaks between calls — the #1 silent LLM bug."
+    },
+    {
+      "id": "sin_main_guard",
+      "tipo": "ast",
+      "severidad": "error",
+      "mensaje": "Missing `if __name__ == \"__main__\":` guard (INGENIERO.md §structure)."
+    },
+    {
+      "id": "sin_argparse",
+      "tipo": "ast",
+      "severidad": "aviso",
+      "mensaje": "No argparse found: compiled scripts must parse their argv explicitly (INGENIERO.md §structure)."
+    },
+    {
+      "id": "credencial_hardcodeada",
+      "tipo": "regex",
+      "severidad": "error",
+      "patron": "(?i)(api[_-]?key|token|passw(or)?d|secret)\\s*=\\s*[\"'][A-Za-z0-9_\\-/+]{8,}[\"']",
+      "mensaje": "Hardcoded credential literal: credentials never travel inside a compiled .py."
+    },
+    {
+      "id": "ruta_personal",
+      "tipo": "regex",
+      "severidad": "error",
+      "patron": "[\"']/(home|Users)/[A-Za-z0-9._-]+/",
+      "mensaje": "Absolute personal path baked in: compiled .py must take paths from argv or env, never from the author's machine."
+    },
+    {
+      "id": "print_debug",
+      "tipo": "regex",
+      "severidad": "aviso",
+      "patron": "print\\(\\s*f?[\"'](DEBUG|debug|here|aqui|test)\\b",
+      "mensaje": "Leftover debug print: logging goes to stderr via logging, stdout is the task's output."
+    },
+    {
+      "id": "open_sin_encoding",
+      "tipo": "regex",
+      "severidad": "aviso",
+      "patron": "\\bopen\\([^)]*[\"'][rwa]b?[\"']\\s*\\)",
+      "mensaje": "`open()` without encoding=: text IO must pin encoding='utf-8'."
+    },
+    {
+      "id": "requests_alucinado",
+      "tipo": "regex",
+      "severidad": "error",
+      "patron": "^\\s*(import\\s+(requests|urllib3|httpx|aiohttp)\\b|from\\s+(requests|urllib3|httpx|aiohttp)\\b)",
+      "mensaje": "HTTP client dependency: compiled .py use urllib.request from the stdlib, and only when the task itself is network-bound."
+    },
+    {
+      "id": "sleep_magico",
+      "tipo": "regex",
+      "severidad": "aviso",
+      "patron": "time\\.sleep\\(\\s*[0-9]{2,}",
+      "mensaje": "Long magic sleep: LLMs paper over race conditions with sleeps — synchronize on real conditions instead."
+    },
+    {
+      "id": "nombre_semantico",
+      "tipo": "llm",
+      "patron": "^\\s*def\\s+(f|foo|bar|func|helper|process|do_stuff|handle)\\d*\\s*\\(",
+      "mensaje": "Semantically empty function name — code cannot judge intent; needs LLM review with the task context."
+    }
+  ]
+}
